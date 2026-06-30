@@ -7,7 +7,7 @@ import cors from 'cors';
 const app = express();
 app.use(cors());
 app.use(express.json());
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 const JWT_SECRET = 'my-temporary-dev-secret-123';
 
 function requireAuth(req, res, next) {
