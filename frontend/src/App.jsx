@@ -7,6 +7,7 @@ import IncomePage from './pages/IncomePage.jsx';
 import AddTransactionPage from './pages/AddTransactionPage.jsx';
 import AddExpensePage from './pages/AddExpensePage.jsx';
 import AddIncomePage from './pages/AddIncomePage.jsx';
+import { LayoutGrid, ArrowDown, Plus as PlusIcon } from 'lucide-react';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -48,14 +49,14 @@ function App() {
 
         <nav className="bottom-nav">
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-            <span className="nav-icon">⊞</span>
+            <LayoutGrid className="nav-icon" size={20} />
             <span className="nav-label">Dashboard</span>
           </NavLink>
           <NavLink to="/add" className="nav-add-btn">
-            <span>+</span>
+            <PlusIcon size={26} />
           </NavLink>
           <NavLink to="/expenses" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-            <span className="nav-icon">↓</span>
+            <ArrowDown className="nav-icon" size={20} />
             <span className="nav-label">Expenses</span>
           </NavLink>
         </nav>

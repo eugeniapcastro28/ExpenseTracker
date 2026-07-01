@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createIncome } from '../api.js';
+import { Briefcase, Laptop, Store, TrendingUp, Gift, Plus } from 'lucide-react';
 
 const CATEGORIES = [
-  { name: 'Salary', icon: '💼' },
-  { name: 'Freelance', icon: '💻' },
-  { name: 'Business', icon: '🏪' },
-  { name: 'Investment', icon: '📈' },
-  { name: 'Gift', icon: '🎁' },
-  { name: 'Other', icon: '➕' },
+  { name: 'Salary', icon: Briefcase },
+  { name: 'Freelance', icon: Laptop },
+  { name: 'Business', icon: Store },
+  { name: 'Investment', icon: TrendingUp },
+  { name: 'Gift', icon: Gift },
+  { name: 'Other', icon: Plus },
 ];
 
 function AddIncomePage() {
@@ -68,18 +69,21 @@ function AddIncomePage() {
 
         <label className="tx-label">Categories</label>
         <div className="cat-grid">
-          {CATEGORIES.map((c) => (
-            <button
-              type="button"
-              key={c.name}
-              className={`cat-grid-item ${category === c.name ? 'cat-grid-item-active-income' : ''}`}
-              onClick={() => setCategory(c.name)}
-            >
-              <span className="cat-grid-icon">{c.icon}</span>
-              <span className="cat-grid-label">{c.name}</span>
-            </button>
-          ))}
-        </div>
+            {CATEGORIES.map((c) => {
+                const Icon = c.icon;
+                return (
+                <button
+                    type="button"
+                    key={c.name}
+                    className={`cat-grid-item ${category === c.name ? 'cat-grid-item-active-income' : ''}`}
+                    onClick={() => setCategory(c.name)}
+                >
+                    <Icon className="cat-grid-icon" size={20} strokeWidth={2} />
+                    <span className="cat-grid-label">{c.name}</span>
+                </button>
+                );
+            })}
+            </div>
 
         <button type="submit" className="btn-save btn-save-income" disabled={saving}>
           {saving ? 'Saving...' : 'Save'}

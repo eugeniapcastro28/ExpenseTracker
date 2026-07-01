@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getExpenses, getIncomes } from '../api.js';
+import { Wallet, CreditCard } from 'lucide-react';
 
 function AddTransactionPage() {
   const navigate = useNavigate();
@@ -29,14 +30,14 @@ function AddTransactionPage() {
 
       <div className="add-tab-row">
         <button className="add-tab add-tab-income" onClick={() => navigate('/add/income')}>
-          <span className="add-tab-icon">💰</span>
-          Add Income
+            <Wallet className="add-tab-icon" size={22} />
+            Add Income
         </button>
         <button className="add-tab add-tab-expense" onClick={() => navigate('/add/expense')}>
-          <span className="add-tab-icon">💳</span>
-          Add Expense
+            <CreditCard className="add-tab-icon" size={22} />
+            Add Expense
         </button>
-      </div>
+        </div>
 
       <p className="section-label" style={{ marginTop: '20px' }}>Last added</p>
       {recent.length === 0 && <p className="empty-state">Nothing added yet.</p>}

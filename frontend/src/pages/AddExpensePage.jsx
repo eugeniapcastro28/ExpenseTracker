@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createExpense } from '../api.js';
+import { ShoppingCart, Car, Receipt, ShoppingBag, Gamepad2, Plus } from 'lucide-react';
 
 const CATEGORIES = [
-  { name: 'Food', icon: '🛒' },
-  { name: 'Transport', icon: '🚗' },
-  { name: 'Bills', icon: '🧾' },
-  { name: 'Shopping', icon: '🛍️' },
-  { name: 'Entertainment', icon: '🎮' },
-  { name: 'Other', icon: '➕' },
+  { name: 'Food', icon: ShoppingCart },
+  { name: 'Transport', icon: Car },
+  { name: 'Bills', icon: Receipt },
+  { name: 'Shopping', icon: ShoppingBag },
+  { name: 'Entertainment', icon: Gamepad2 },
+  { name: 'Other', icon: Plus },
 ];
 
 function AddExpensePage() {
@@ -68,17 +69,20 @@ function AddExpensePage() {
 
         <label className="tx-label">Categories</label>
         <div className="cat-grid">
-          {CATEGORIES.map((c) => (
+        {CATEGORIES.map((c) => {
+            const Icon = c.icon;
+            return (
             <button
-              type="button"
-              key={c.name}
-              className={`cat-grid-item ${category === c.name ? 'cat-grid-item-active-expense' : ''}`}
-              onClick={() => setCategory(c.name)}
+                type="button"
+                key={c.name}
+                className={`cat-grid-item ${category === c.name ? 'cat-grid-item-active-expense' : ''}`}
+                onClick={() => setCategory(c.name)}
             >
-              <span className="cat-grid-icon">{c.icon}</span>
-              <span className="cat-grid-label">{c.name}</span>
+                <Icon className="cat-grid-icon" size={20} strokeWidth={2} />
+                <span className="cat-grid-label">{c.name}</span>
             </button>
-          ))}
+            );
+        })}
         </div>
 
         <button type="submit" className="btn-save btn-save-expense" disabled={saving}>

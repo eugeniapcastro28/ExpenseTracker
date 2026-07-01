@@ -391,8 +391,7 @@ body {
 }
 
 .nav-icon {
-  font-size: 20px;
-  line-height: 1;
+  color: inherit;
 }
 
 .nav-label {
@@ -565,9 +564,9 @@ body {
   gap: 8px;
 }
 
-.add-tab-icon {
+/* .add-tab-icon {
   font-size: 22px;
-}
+} */
 
 .add-tab-income {
   background: #f0fdf4;
@@ -627,8 +626,11 @@ body {
 }
 
 .cat-grid-icon {
-  font-size: 18px;
+  color: #666;
 }
+
+.cat-grid-item-active-expense .cat-grid-icon { color: #c0392b; }
+.cat-grid-item-active-income .cat-grid-icon { color: #16a34a; }
 
 .cat-grid-label {
   font-size: 10px;
