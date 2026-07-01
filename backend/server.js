@@ -108,9 +108,53 @@ app.get('/api/expenses/summary', requireAuth, (req, res) => {
     `)
     .all(req.userId);
 
-  const totalRow = db
+  const totalExpenses = db
     .prepare('SELECT SUM(amount) as total FROM expenses WHERE user_id = ?')
     .get(req.userId);
 
-  res.json({ byCategory, total: totalRow.total || 0 });
+  const totalIncome = db
+    .prepare('SELECT SUM(amount) as total FROM incomes WHERE user_id = ?')
+    .get(req.userId);
+
+  res.json({
+    byCategory,
+    totalExpenses: totalExpenses.total || 0,
+    totalIncome: totalIncome.total || 0,
+    balance: (totalIncome.total || 0) - (totalExpenses.total || 0)
+  });
+});
+
+// INCOMES ENDPOINTS
+
+app.get('/api/incomes', requireAuth, (req, res) => {
+  const incomes = db
+    .prepare('SELECT * FROM incomes WHERE user_id = ? ORDER BY date DESC, id DESC')
+    .all(req.userId);
+  res.json(incomes);
+});
+
+app.post('/api/incomes', requireAuth, (req, res) => {
+  const { amount, category, note, date } = req.body;
+
+  if (!amount || !category || !date) {
+    return res.status(400).json({ error: 'amount, category, and date are required' });
+  }
+
+  const result = db
+    .prepare('INSERT INTO incomes (user_id, amount, category, note, date) VALUES (?, ?, ?, ?, ?)')
+    .run(req.userId, amount, category, note || '', date);
+
+  const created = db.prepare('SELECT * FROM incomes WHERE id = ?').get(result.lastInsertRowid);
+  res.status(201).json(created);
+});
+
+app.delete('/api/incomes/:id', requireAuth, (req, res) => {
+  const existing = db
+    .prepare('SELECT * FROM incomes WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+
+  if (!existing) return res.status(404).json({ error: 'Income not found' });
+
+  db.prepare('DELETE FROM incomes WHERE id = ?').run(req.params.id);
+  res.status(204).send();
 });
