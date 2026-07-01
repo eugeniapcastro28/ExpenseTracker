@@ -28,3 +28,16 @@ export async function deleteIncome(id) {
     headers: { Authorization: `Bearer ${token}` }
   });
 }
+
+export async function updateIncome(id, income) {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${API_BASE}/incomes/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(income)
+  });
+  return res.json();
+}

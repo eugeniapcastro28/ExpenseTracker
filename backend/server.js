@@ -158,3 +158,49 @@ app.delete('/api/incomes/:id', requireAuth, (req, res) => {
   db.prepare('DELETE FROM incomes WHERE id = ?').run(req.params.id);
   res.status(204).send();
 });
+
+app.put('/api/expenses/:id', requireAuth, (req, res) => {
+  const { amount, category, note, date } = req.body;
+
+  const existing = db
+    .prepare('SELECT * FROM expenses WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+
+  if (!existing) return res.status(404).json({ error: 'Expense not found' });
+
+  db.prepare(
+    'UPDATE expenses SET amount = ?, category = ?, note = ?, date = ? WHERE id = ?'
+  ).run(
+    amount ?? existing.amount,
+    category ?? existing.category,
+    note ?? existing.note,
+    date ?? existing.date,
+    req.params.id
+  );
+
+  const updated = db.prepare('SELECT * FROM expenses WHERE id = ?').get(req.params.id);
+  res.json(updated);
+});
+
+app.put('/api/incomes/:id', requireAuth, (req, res) => {
+  const { amount, category, note, date } = req.body;
+
+  const existing = db
+    .prepare('SELECT * FROM incomes WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+
+  if (!existing) return res.status(404).json({ error: 'Income not found' });
+
+  db.prepare(
+    'UPDATE incomes SET amount = ?, category = ?, note = ?, date = ? WHERE id = ?'
+  ).run(
+    amount ?? existing.amount,
+    category ?? existing.category,
+    note ?? existing.note,
+    date ?? existing.date,
+    req.params.id
+  );
+
+  const updated = db.prepare('SELECT * FROM incomes WHERE id = ?').get(req.params.id);
+  res.json(updated);
+});

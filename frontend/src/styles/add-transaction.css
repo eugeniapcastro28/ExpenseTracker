@@ -148,3 +148,49 @@
 
 .btn-save-expense { background: #c0392b; }
 .btn-save-income { background: #16a34a; }
+
+/* ── Edit page ── */
+.edit-page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+}
+
+.edit-page-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111;
+  text-transform: capitalize;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: -4px;
+}
+
+.btn-cancel {
+  width: 100%;
+  background: #f8f8f8;
+  color: #666;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}

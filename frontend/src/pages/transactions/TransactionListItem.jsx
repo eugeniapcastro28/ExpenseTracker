@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Trash2 } from 'lucide-react';
 import { getCategoryMeta } from '../../utils/categoryIcons.js';
+import { useNavigate } from 'react-router-dom';
 
 const SWIPE_THRESHOLD = 70;
 const MAX_SWIPE = 90;
@@ -11,6 +12,23 @@ function TransactionListItem({ item, type, onRequestDelete }) {
   const [isHidden, setIsHidden] = useState(false);
   const startX = useRef(null);
   const dragging = useRef(false);
+  const navigate = useNavigate();
+
+    function handleTap() {
+    navigate(`/edit/${item.id}?type=${type}`);
+    }
+
+    function handleTouchEnd() {
+  dragging.current = false;
+  if (translateX <= -SWIPE_THRESHOLD) {
+    requestDelete();
+  } else if (translateX === 0) {
+    // no swipe happened — treat as a tap
+    handleTap();
+  } else {
+    setTranslateX(0);
+  }
+}
 
   function handleTouchStart(e) {
     startX.current = e.touches[0].clientX;
@@ -77,9 +95,13 @@ function TransactionListItem({ item, type, onRequestDelete }) {
           <span className={`exp-amt ${type === 'income' ? 'income-amt' : ''}`}>
             {type === 'income' ? '+' : '-'}₱{item.amount.toFixed(2)}
           </span>
-          <button className="btn-delete" onClick={requestDelete} type="button">
+          <button
+            className="btn-delete"
+            onClick={(e) => { e.stopPropagation(); requestDelete(); }}
+            type="button"
+            >
             ×
-          </button>
+            </button>
         </div>
       </div>
     </li>

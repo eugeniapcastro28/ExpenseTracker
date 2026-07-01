@@ -36,3 +36,16 @@ export async function getSummary() {
   });
   return res.json();
 }
+
+export async function updateExpense(id, expense) {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${API_BASE}/expenses/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(expense)
+  });
+  return res.json();
+}

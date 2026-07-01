@@ -6,27 +6,45 @@ import GroupedTransactionList from '../../components/transactions/GroupedTransac
 import MonthFilter from '../../components/transactions/MonthFilter.jsx';
 import TransactionStats from '../../components/transactions/TransactionStats.jsx';
 import UndoToast from '../../components/transactions/UndoToast.jsx';
+import CategoryFilterChips from '../../components/transactions/CategoryFilterChips.jsx';
 import {
   filterByMonth,
   groupByWeek,
   getAvailableMonths,
   sortItems,
   searchItems,
+  filterByCategory,
 } from '../../utils/dateHelpers.js';
+import {
+  SkeletonTotalsGrid,
+  SkeletonStatsCard,
+  SkeletonTransactionGroup
+} from '../../components/ui/Skeleton.jsx';
 
 function TransactionsPage() {
   const [tab, setTab] = useState('expense');
   const [sortBy, setSortBy] = useState('newest');
   const [query, setQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  const [pendingDelete, setPendingDelete] = useState(null); // { item, type }
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadExpenses();
-    loadIncomes();
-  }, []);
+  async function load() {
+    setLoading(true);
+    await Promise.all([loadExpenses(), loadIncomes()]);
+    setLoading(false);
+  }
+  load();
+}, []);
+
+  // Reset category filter when switching tabs (Food doesn't exist under Income, etc.)
+  useEffect(() => {
+    setCategoryFilter(null);
+  }, [tab]);
 
   async function loadExpenses() {
     const data = await getExpenses();
@@ -39,7 +57,6 @@ function TransactionsPage() {
   }
 
   function handleRequestDelete(item) {
-    // If something was already pending, finalize it immediately before starting a new one
     if (pendingDelete) {
       finalizeDelete(pendingDelete);
     }
@@ -47,7 +64,7 @@ function TransactionsPage() {
   }
 
   function handleUndo() {
-    setPendingDelete(null); // item reappears since it's no longer filtered out
+    setPendingDelete(null);
   }
 
   async function finalizeDelete(pending) {
@@ -88,7 +105,6 @@ function TransactionsPage() {
     [incomes, selectedMonth]
   );
 
-  // Hide the item currently pending deletion from totals, chart, and list
   const visibleExpenses = useMemo(() => {
     if (pendingDelete?.type === 'expense') {
       return monthExpenses.filter((e) => e.id !== pendingDelete.item.id);
@@ -123,27 +139,32 @@ function TransactionsPage() {
   }, [visibleExpenses, visibleIncomes, selectedMonth]);
 
   const activeItems = tab === 'expense' ? visibleExpenses : visibleIncomes;
-  const filteredItems = useMemo(() => searchItems(activeItems, query), [activeItems, query]);
-  const sortedItems = useMemo(() => sortItems(filteredItems, sortBy), [filteredItems, sortBy]);
+  const categoryFiltered = useMemo(
+    () => filterByCategory(activeItems, categoryFilter),
+    [activeItems, categoryFilter]
+  );
+  const searched = useMemo(() => searchItems(categoryFiltered, query), [categoryFiltered, query]);
+  const sortedItems = useMemo(() => sortItems(searched, sortBy), [searched, sortBy]);
 
   const emptyMessage =
-    query.trim()
-      ? `No ${tab === 'expense' ? 'expenses' : 'income'} match "${query}".`
+    query.trim() || categoryFilter
+      ? `No ${tab === 'expense' ? 'expenses' : 'income'} match your filters.`
       : tab === 'expense'
       ? 'No expenses yet. Add your first one above.'
       : 'No income recorded yet.';
 
   return (
-    <div className="page-content">
-      <div className="tx-page-header">
-        <p className="section-label" style={{ marginBottom: 0 }}>Transactions</p>
-        <MonthFilter
-          selectedMonth={selectedMonth}
-          onChange={setSelectedMonth}
-          availableMonths={availableMonths}
-        />
-      </div>
+  <div className="page-content">
+    <div className="tx-page-header">
+      <p className="section-label" style={{ marginBottom: 0 }}>Transactions</p>
+      <MonthFilter
+        selectedMonth={selectedMonth}
+        onChange={setSelectedMonth}
+        availableMonths={availableMonths}
+      />
+    </div>
 
+    {loading ? <SkeletonTotalsGrid /> : (
       <div className="totals-grid">
         <div className="totals-card totals-card-income">
           <div className="summary-label">Total Income</div>
@@ -154,64 +175,77 @@ function TransactionsPage() {
           <div className="totals-amt totals-amt-expense">₱{totalExpenses.toFixed(2)}</div>
         </div>
       </div>
+    )}
 
-      <div className={`net-badge ${net >= 0 ? 'net-positive' : 'net-negative'}`}>
-        {net >= 0 ? 'Net gain this month' : 'Net loss this month'}: {net >= 0 ? '+' : ''}₱{net.toFixed(2)}
-      </div>
-
-      <TransactionStats data={chartData} />
-
-      <div className="type-toggle">
-        <button
-          className={`type-btn ${tab === 'income' ? 'type-btn-active-income' : ''}`}
-          onClick={() => setTab('income')}
-          type="button"
-        >
-          Income
-        </button>
-        <button
-          className={`type-btn ${tab === 'expense' ? 'type-btn-active-expense' : ''}`}
-          onClick={() => setTab('expense')}
-          type="button"
-        >
-          Expenses
-        </button>
-      </div>
-
-      <div className="tx-search-row">
-        <div className="tx-search-box">
-          <Search size={15} className="tx-search-icon" />
-          <input
-            type="text"
-            placeholder={`Search ${tab === 'expense' ? 'expenses' : 'income'}...`}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+    {loading ? <SkeletonStatsCard /> : (
+      <>
+        <div className={`net-badge ${net >= 0 ? 'net-positive' : 'net-negative'}`}>
+          {net >= 0 ? 'Net gain this month' : 'Net loss this month'}: {net >= 0 ? '+' : ''}₱{net.toFixed(2)}
         </div>
-        <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="highest">Highest</option>
-          <option value="lowest">Lowest</option>
-        </select>
-      </div>
+        <TransactionStats data={chartData} />
+      </>
+    )}
 
+    <div className="type-toggle">
+      <button
+        className={`type-btn ${tab === 'income' ? 'type-btn-active-income' : ''}`}
+        onClick={() => setTab('income')}
+        type="button"
+      >
+        Income
+      </button>
+      <button
+        className={`type-btn ${tab === 'expense' ? 'type-btn-active-expense' : ''}`}
+        onClick={() => setTab('expense')}
+        type="button"
+      >
+        Expenses
+      </button>
+    </div>
+
+    <CategoryFilterChips type={tab} selected={categoryFilter} onChange={setCategoryFilter} />
+
+    <div className="tx-search-row">
+      <div className="tx-search-box">
+        <Search size={15} className="tx-search-icon" />
+        <input
+          type="text"
+          placeholder={`Search ${tab === 'expense' ? 'expenses' : 'income'}...`}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
+      <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+        <option value="highest">Highest</option>
+        <option value="lowest">Lowest</option>
+      </select>
+    </div>
+
+    {loading ? (
+      <div className="tx-grouped-list">
+        <SkeletonTransactionGroup />
+        <SkeletonTransactionGroup />
+      </div>
+    ) : (
       <GroupedTransactionList
         items={sortedItems}
         type={tab}
         onRequestDelete={handleRequestDelete}
         emptyMessage={emptyMessage}
       />
+    )}
 
-      {pendingDelete && (
-        <UndoToast
-          message={`${pendingDelete.type === 'income' ? 'Income' : 'Expense'} deleted`}
-          onUndo={handleUndo}
-          onExpire={handleToastExpire}
-        />
-      )}
-    </div>
-  );
+    {pendingDelete && (
+      <UndoToast
+        message={`${pendingDelete.type === 'income' ? 'Income' : 'Expense'} deleted`}
+        onUndo={handleUndo}
+        onExpire={handleToastExpire}
+      />
+    )}
+  </div>
+);
 }
 
 export default TransactionsPage;

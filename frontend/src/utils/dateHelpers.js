@@ -107,3 +107,8 @@ export function searchItems(items, query) {
       (item.note && item.note.toLowerCase().includes(q))
   );
 }
+
+export function filterByCategory(items, category) {
+  if (!category) return items;
+  return items.filter((item) => item.category === category);
+}
