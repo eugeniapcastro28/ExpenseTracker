@@ -1,0 +1,285 @@
+/* ── Expense form ── */
+.expense-form {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px;
+  border: 0.5px solid #e8e8e8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.expense-form input,
+.expense-form select {
+  background: #f8f8f8;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13px;
+  color: #111;
+  width: 100%;
+}
+
+.btn-add {
+  width: 100%;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+/* ── Expense list ── */
+.expense-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.expense-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 13px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 0.5px solid #ebebeb;
+}
+
+.exp-cat {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  margin-bottom: 3px;
+}
+
+.exp-note {
+  font-size: 11px;
+  color: #999;
+}
+
+.exp-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.exp-amt {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111;
+}
+
+.btn-delete {
+  background: #fdf2f2;
+  color: #c0392b;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Category badges ── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
+.badge-Food { background: #fef3c7; color: #92400e; }
+.badge-Transport { background: #dbeafe; color: #1e40af; }
+.badge-Bills { background: #f0fdf4; color: #166534; }
+.badge-Shopping { background: #fdf4ff; color: #7e22ce; }
+.badge-Entertainment { background: #fff7ed; color: #9a3412; }
+.badge-Other { background: #f1f5f9; color: #475569; }
+
+.income-amt { color: #16a34a; }
+
+.btn-add-income { background: #16a34a; }
+
+.badge-income-Salary { background: #dcfce7; color: #166534; }
+.badge-income-Freelance { background: #dbeafe; color: #1e40af; }
+.badge-income-Business { background: #fdf4ff; color: #7e22ce; }
+.badge-income-Investment { background: #fef9c3; color: #854d0e; }
+.badge-income-Gift { background: #fce7f3; color: #9d174d; }
+.badge-income-Other { background: #f1f5f9; color: #475569; }
+
+.type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.type-btn {
+  padding: 10px;
+  border-radius: 10px;
+  border: 0.5px solid #e0e0e0;
+  background: #f8f8f8;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #999;
+}
+
+.type-btn-active-expense {
+  background: #fdf2f2;
+  border-color: #c0392b;
+  color: #c0392b;
+}
+
+.type-btn-active-income {
+  background: #f0fdf4;
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+/* ── Month filter ── */
+.tx-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.month-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.month-select {
+  background: #f8f8f8;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+}
+
+.month-label {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ── Totals grid (Income / Expenses) ── */
+.totals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.totals-card {
+  border-radius: 14px;
+  padding: 14px;
+  border: 0.5px solid #ebebeb;
+}
+
+.totals-card-income {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.totals-card-expense {
+  background: #fdf2f2;
+  border-color: #fecaca;
+}
+
+.totals-amt {
+  font-size: 20px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.totals-amt-income { color: #16a34a; }
+.totals-amt-expense { color: #c0392b; }
+
+/* ── Stats chart card ── */
+.stats-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 8px 8px;
+  border: 0.5px solid #ebebeb;
+}
+
+.stats-header {
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+/* ── Transaction row with icon ── */
+.tx-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tx-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Net change badge ── */
+.net-badge {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.net-positive {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.net-negative {
+  background: #fdf2f2;
+  color: #c0392b;
+}
+
+/* ── Controls row (toggle + sort) ── */
+.tx-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-select {
+  background: #f8f8f8;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  flex-shrink: 0;
+}

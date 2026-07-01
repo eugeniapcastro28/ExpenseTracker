@@ -1,0 +1,73 @@
+/* ── Auth page ── */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+  background: #f8f8f8;
+}
+
+.auth-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 0.5px solid #e8e8e8;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.auth-card h1 {
+  color: #c0392b;
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.auth-card p {
+  color: #999;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.auth-card input {
+  width: 100%;
+  background: #f8f8f8;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 11px 12px;
+  font-size: 14px;
+  color: #111;
+  margin-bottom: 10px;
+}
+
+.btn-auth {
+  width: 100%;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.btn-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.auth-error {
+  color: #c0392b;
+  font-size: 12px;
+  margin-top: -4px;
+  margin-bottom: 8px;
+}

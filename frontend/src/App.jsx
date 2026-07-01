@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage.jsx';
-import DashboardPage from './pages/DashboardPage.jsx';
-import ExpensePage from './pages/ExpensePage.jsx';
-import IncomePage from './pages/IncomePage.jsx';
-import AddTransactionPage from './pages/AddTransactionPage.jsx';
-import AddExpensePage from './pages/AddExpensePage.jsx';
-import AddIncomePage from './pages/AddIncomePage.jsx';
-import { LayoutGrid, ArrowDown, Plus as PlusIcon } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './pages/auth/LoginPage.jsx';
+import DashboardPage from './pages/dashboard/DashboardPage.jsx';
+import ExpensePage from './pages/expense/ExpensePage.jsx';
+import IncomePage from './pages/income/IncomePage.jsx';
+import AddTransactionPage from './pages/add-transaction/AddTransactionPage.jsx';
+import AddExpensePage from './pages/add-transaction/AddExpensePage.jsx';
+import AddIncomePage from './pages/add-transaction/AddIncomePage.jsx';
+import BottomNav from './components/layout/BottomNav.jsx';
+import TransactionsPage from './pages/transactions/TransactionsPage.jsx';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -24,10 +25,7 @@ function App() {
   }
 
   if (checkingAuth) return null;
-
-  if (!isLoggedIn) {
-    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
-  }
+  if (!isLoggedIn) return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
 
   return (
     <BrowserRouter>
@@ -45,21 +43,10 @@ function App() {
           <Route path="/add" element={<AddTransactionPage />} />
           <Route path="/add/expense" element={<AddExpensePage />} />
           <Route path="/add/income" element={<AddIncomePage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
         </Routes>
 
-        <nav className="bottom-nav">
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-            <LayoutGrid className="nav-icon" size={20} />
-            <span className="nav-label">Dashboard</span>
-          </NavLink>
-          <NavLink to="/add" className="nav-add-btn">
-            <PlusIcon size={26} />
-          </NavLink>
-          <NavLink to="/expenses" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-            <ArrowDown className="nav-icon" size={20} />
-            <span className="nav-label">Expenses</span>
-          </NavLink>
-        </nav>
+        <BottomNav />
       </div>
     </BrowserRouter>
   );

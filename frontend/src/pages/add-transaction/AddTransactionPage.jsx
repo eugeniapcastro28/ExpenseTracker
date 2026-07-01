@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getExpenses, getIncomes } from '../api.js';
+import { getExpenses } from '../../api/expenses.js';
+import { getIncomes } from '../../api/incomes.js';
 import { Wallet, CreditCard } from 'lucide-react';
 
 function AddTransactionPage() {

@@ -1,21 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createIncome } from '../api.js';
-import { Briefcase, Laptop, Store, TrendingUp, Gift, Plus } from 'lucide-react';
+import { createExpense } from '../../api/expenses.js';
+import { ShoppingCart, Car, Receipt, ShoppingBag, Gamepad2, Plus } from 'lucide-react';
 
 const CATEGORIES = [
-  { name: 'Salary', icon: Briefcase },
-  { name: 'Freelance', icon: Laptop },
-  { name: 'Business', icon: Store },
-  { name: 'Investment', icon: TrendingUp },
-  { name: 'Gift', icon: Gift },
+  { name: 'Food', icon: ShoppingCart },
+  { name: 'Transport', icon: Car },
+  { name: 'Bills', icon: Receipt },
+  { name: 'Shopping', icon: ShoppingBag },
+  { name: 'Entertainment', icon: Gamepad2 },
   { name: 'Other', icon: Plus },
 ];
 
-function AddIncomePage() {
+function AddExpensePage() {
   const navigate = useNavigate();
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Salary');
+  const [category, setCategory] = useState('Food');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
@@ -24,7 +24,7 @@ function AddIncomePage() {
     e.preventDefault();
     if (!amount) return;
     setSaving(true);
-    await createIncome({ amount: parseFloat(amount), category, note, date });
+    await createExpense({ amount: parseFloat(amount), category, note, date });
     setSaving(false);
     navigate('/dashboard');
   }
@@ -33,7 +33,7 @@ function AddIncomePage() {
     <div className="page-content">
       <div className="add-page-header">
         <button className="btn-back" onClick={() => navigate(-1)}>←</button>
-        <span className="add-page-title">Add Income</span>
+        <span className="add-page-title">Add Expense</span>
         <span style={{ width: 28 }} />
       </div>
 
@@ -69,23 +69,23 @@ function AddIncomePage() {
 
         <label className="tx-label">Categories</label>
         <div className="cat-grid">
-            {CATEGORIES.map((c) => {
-                const Icon = c.icon;
-                return (
-                <button
-                    type="button"
-                    key={c.name}
-                    className={`cat-grid-item ${category === c.name ? 'cat-grid-item-active-income' : ''}`}
-                    onClick={() => setCategory(c.name)}
-                >
-                    <Icon className="cat-grid-icon" size={20} strokeWidth={2} />
-                    <span className="cat-grid-label">{c.name}</span>
-                </button>
-                );
-            })}
-            </div>
+        {CATEGORIES.map((c) => {
+            const Icon = c.icon;
+            return (
+            <button
+                type="button"
+                key={c.name}
+                className={`cat-grid-item ${category === c.name ? 'cat-grid-item-active-expense' : ''}`}
+                onClick={() => setCategory(c.name)}
+            >
+                <Icon className="cat-grid-icon" size={20} strokeWidth={2} />
+                <span className="cat-grid-label">{c.name}</span>
+            </button>
+            );
+        })}
+        </div>
 
-        <button type="submit" className="btn-save btn-save-income" disabled={saving}>
+        <button type="submit" className="btn-save btn-save-expense" disabled={saving}>
           {saving ? 'Saving...' : 'Save'}
         </button>
       </form>
@@ -93,4 +93,4 @@ function AddIncomePage() {
   );
 }
 
-export default AddIncomePage;
+export default AddExpensePage;

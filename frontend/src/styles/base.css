@@ -1,0 +1,81 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f8f8f8;
+  color: #111;
+}
+
+/* ── App layout ── */
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.app-header {
+  background: #c0392b;
+  padding: 20px 16px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+
+
+.app-header h1 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+}
+
+.btn-logout {
+  color: #f5b7b1;
+  font-size: 12px;
+  background: rgba(0,0,0,0.15);
+  border: 0.5px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+/* ── Page content ── */
+.page-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 48px;
+}
+
+/* ── Section label ── */
+.section-label {
+  color: #999;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: -8px;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center;
+  color: #bbb;
+  padding: 32px 0;
+  font-size: 14px;
+}
+
+/* make sure content doesn't hide behind bottom nav */
+.page-content {
+  padding-bottom: 80px;
+}

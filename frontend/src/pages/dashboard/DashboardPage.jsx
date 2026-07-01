@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getSummary, getExpenses, getIncomes } from '../api.js';
-import Summary from '../components/dashboard/Summary.jsx';
+import { getSummary } from '../../api/expenses.js';
+import { getExpenses } from '../../api/expenses.js';
+import { getIncomes } from '../../api/incomes.js';
+import Summary from '../../components/dashboard/Summary.jsx';
 
 function DashboardPage() {
   const [summary, setSummary] = useState(null);

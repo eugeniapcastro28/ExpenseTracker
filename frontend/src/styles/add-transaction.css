@@ -1,0 +1,150 @@
+.add-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.add-page-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111;
+}
+
+.btn-back {
+  background: #f1f1f1;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Add tabs (Income / Expense) ── */
+.add-tab-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.add-tab {
+  border: none;
+  border-radius: 14px;
+  padding: 18px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-tab-income {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.add-tab-expense {
+  background: #fdf2f2;
+  color: #c0392b;
+}
+
+/* ── Dedicated add form ── */
+.tx-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tx-label {
+  color: #999;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 10px;
+  margin-bottom: 2px;
+}
+
+.tx-input {
+  background: #f8f8f8;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #111;
+  width: 100%;
+}
+
+/* ── Category grid ── */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cat-grid-item {
+  background: #f8f8f8;
+  border: 0.5px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.cat-grid-icon {
+  color: #666;
+}
+
+.cat-grid-item-active-expense .cat-grid-icon { color: #c0392b; }
+.cat-grid-item-active-income .cat-grid-icon { color: #16a34a; }
+
+.cat-grid-label {
+  font-size: 10px;
+  color: #666;
+  font-weight: 500;
+  text-align: center;
+}
+
+.cat-grid-item-active-expense {
+  background: #fdf2f2;
+  border-color: #c0392b;
+}
+.cat-grid-item-active-expense .cat-grid-label { color: #c0392b; }
+
+.cat-grid-item-active-income {
+  background: #f0fdf4;
+  border-color: #16a34a;
+}
+.cat-grid-item-active-income .cat-grid-label { color: #16a34a; }
+
+/* ── Save button ── */
+.btn-save {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-save-expense { background: #c0392b; }
+.btn-save-income { background: #16a34a; }

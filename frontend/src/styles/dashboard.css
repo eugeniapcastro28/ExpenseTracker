@@ -1,0 +1,84 @@
+.cat-name {
+  color: #999;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cat-amt {
+  color: #c0392b;
+  font-size: 15px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ── Summary card ── */
+.summary-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  border: 0.5px solid #ebebeb;
+}
+
+.summary-label {
+  color: #999;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.summary-total {
+  color: #c0392b;
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -1px;
+}
+
+.summary-sub {
+  color: #bbb;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.summary-cats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.summary-cat {
+  background: #fdf2f2;
+  border-radius: 10px;
+  padding: 10px;
+  border: 0.5px solid #fecaca;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.summary-income {
+  color: #16a34a;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.summary-balance-row {
+  border-top: 0.5px solid #ebebeb;
+  padding-top: 12px;
+  margin-bottom: 4px;
+}
+
+.summary-balance {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+
+.summary-balance.positive { color: #16a34a; }
+.summary-balance.negative { color: #c0392b; }
