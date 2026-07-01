@@ -1,18 +1,27 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Search } from 'lucide-react';
 import { getExpenses, deleteExpense } from '../../api/expenses.js';
 import { getIncomes, deleteIncome } from '../../api/incomes.js';
-import ExpenseList from '../../components/expense/ExpenseList.jsx';
-import IncomeList from '../../components/income/IncomeList.jsx';
+import GroupedTransactionList from '../../components/transactions/GroupedTransactionList.jsx';
 import MonthFilter from '../../components/transactions/MonthFilter.jsx';
 import TransactionStats from '../../components/transactions/TransactionStats.jsx';
-import { filterByMonth, groupByWeek, getAvailableMonths, sortItems } from '../../utils/dateHelpers.js';
+import UndoToast from '../../components/transactions/UndoToast.jsx';
+import {
+  filterByMonth,
+  groupByWeek,
+  getAvailableMonths,
+  sortItems,
+  searchItems,
+} from '../../utils/dateHelpers.js';
 
 function TransactionsPage() {
   const [tab, setTab] = useState('expense');
   const [sortBy, setSortBy] = useState('newest');
+  const [query, setQuery] = useState('');
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null); // { item, type }
 
   useEffect(() => {
     loadExpenses();
@@ -29,14 +38,32 @@ function TransactionsPage() {
     setIncomes(data);
   }
 
-  async function handleDeleteExpense(id) {
-    await deleteExpense(id);
-    await loadExpenses();
+  function handleRequestDelete(item) {
+    // If something was already pending, finalize it immediately before starting a new one
+    if (pendingDelete) {
+      finalizeDelete(pendingDelete);
+    }
+    setPendingDelete({ item, type: tab });
   }
 
-  async function handleDeleteIncome(id) {
-    await deleteIncome(id);
-    await loadIncomes();
+  function handleUndo() {
+    setPendingDelete(null); // item reappears since it's no longer filtered out
+  }
+
+  async function finalizeDelete(pending) {
+    if (!pending) return;
+    if (pending.type === 'expense') {
+      await deleteExpense(pending.item.id);
+      await loadExpenses();
+    } else {
+      await deleteIncome(pending.item.id);
+      await loadIncomes();
+    }
+  }
+
+  function handleToastExpire() {
+    finalizeDelete(pendingDelete);
+    setPendingDelete(null);
   }
 
   const availableMonths = useMemo(
@@ -61,27 +88,50 @@ function TransactionsPage() {
     [incomes, selectedMonth]
   );
 
-  const sortedExpenses = useMemo(() => sortItems(monthExpenses, sortBy), [monthExpenses, sortBy]);
-  const sortedIncomes = useMemo(() => sortItems(monthIncomes, sortBy), [monthIncomes, sortBy]);
+  // Hide the item currently pending deletion from totals, chart, and list
+  const visibleExpenses = useMemo(() => {
+    if (pendingDelete?.type === 'expense') {
+      return monthExpenses.filter((e) => e.id !== pendingDelete.item.id);
+    }
+    return monthExpenses;
+  }, [monthExpenses, pendingDelete]);
+
+  const visibleIncomes = useMemo(() => {
+    if (pendingDelete?.type === 'income') {
+      return monthIncomes.filter((i) => i.id !== pendingDelete.item.id);
+    }
+    return monthIncomes;
+  }, [monthIncomes, pendingDelete]);
 
   const totalExpenses = useMemo(
-    () => monthExpenses.reduce((sum, e) => sum + e.amount, 0),
-    [monthExpenses]
+    () => visibleExpenses.reduce((sum, e) => sum + e.amount, 0),
+    [visibleExpenses]
   );
   const totalIncome = useMemo(
-    () => monthIncomes.reduce((sum, i) => sum + i.amount, 0),
-    [monthIncomes]
+    () => visibleIncomes.reduce((sum, i) => sum + i.amount, 0),
+    [visibleIncomes]
   );
   const net = totalIncome - totalExpenses;
 
   const chartData = useMemo(() => {
     if (!selectedMonth) return [];
     const combined = [
-      ...monthExpenses.map((e) => ({ ...e, type: 'expense' })),
-      ...monthIncomes.map((i) => ({ ...i, type: 'income' })),
+      ...visibleExpenses.map((e) => ({ ...e, type: 'expense' })),
+      ...visibleIncomes.map((i) => ({ ...i, type: 'income' })),
     ];
     return groupByWeek(combined, selectedMonth);
-  }, [monthExpenses, monthIncomes, selectedMonth]);
+  }, [visibleExpenses, visibleIncomes, selectedMonth]);
+
+  const activeItems = tab === 'expense' ? visibleExpenses : visibleIncomes;
+  const filteredItems = useMemo(() => searchItems(activeItems, query), [activeItems, query]);
+  const sortedItems = useMemo(() => sortItems(filteredItems, sortBy), [filteredItems, sortBy]);
+
+  const emptyMessage =
+    query.trim()
+      ? `No ${tab === 'expense' ? 'expenses' : 'income'} match "${query}".`
+      : tab === 'expense'
+      ? 'No expenses yet. Add your first one above.'
+      : 'No income recorded yet.';
 
   return (
     <div className="page-content">
@@ -111,24 +161,33 @@ function TransactionsPage() {
 
       <TransactionStats data={chartData} />
 
-      <div className="tx-controls-row">
-        <div className="type-toggle" style={{ flex: 1 }}>
-          <button
-            className={`type-btn ${tab === 'income' ? 'type-btn-active-income' : ''}`}
-            onClick={() => setTab('income')}
-            type="button"
-          >
-            Income
-          </button>
-          <button
-            className={`type-btn ${tab === 'expense' ? 'type-btn-active-expense' : ''}`}
-            onClick={() => setTab('expense')}
-            type="button"
-          >
-            Expenses
-          </button>
-        </div>
+      <div className="type-toggle">
+        <button
+          className={`type-btn ${tab === 'income' ? 'type-btn-active-income' : ''}`}
+          onClick={() => setTab('income')}
+          type="button"
+        >
+          Income
+        </button>
+        <button
+          className={`type-btn ${tab === 'expense' ? 'type-btn-active-expense' : ''}`}
+          onClick={() => setTab('expense')}
+          type="button"
+        >
+          Expenses
+        </button>
+      </div>
 
+      <div className="tx-search-row">
+        <div className="tx-search-box">
+          <Search size={15} className="tx-search-icon" />
+          <input
+            type="text"
+            placeholder={`Search ${tab === 'expense' ? 'expenses' : 'income'}...`}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
         <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
@@ -137,10 +196,19 @@ function TransactionsPage() {
         </select>
       </div>
 
-      {tab === 'expense' ? (
-        <ExpenseList expenses={sortedExpenses} onDelete={handleDeleteExpense} />
-      ) : (
-        <IncomeList incomes={sortedIncomes} onDelete={handleDeleteIncome} />
+      <GroupedTransactionList
+        items={sortedItems}
+        type={tab}
+        onRequestDelete={handleRequestDelete}
+        emptyMessage={emptyMessage}
+      />
+
+      {pendingDelete && (
+        <UndoToast
+          message={`${pendingDelete.type === 'income' ? 'Income' : 'Expense'} deleted`}
+          onUndo={handleUndo}
+          onExpire={handleToastExpire}
+        />
       )}
     </div>
   );

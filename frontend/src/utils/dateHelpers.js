@@ -69,3 +69,41 @@ export function sortItems(items, sortBy) {
       return copy;
   }
 }
+
+export function groupByDate(items) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const groups = {};
+
+  items.forEach((item) => {
+    const d = new Date(item.date);
+    d.setHours(0, 0, 0, 0);
+
+    let label;
+    if (d.getTime() === today.getTime()) {
+      label = 'Today';
+    } else if (d.getTime() === yesterday.getTime()) {
+      label = 'Yesterday';
+    } else {
+      label = d.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    if (!groups[label]) groups[label] = [];
+    groups[label].push(item);
+  });
+
+  return groups; // { "Today": [...], "Yesterday": [...], "June 28, 2026": [...] }
+}
+
+export function searchItems(items, query) {
+  if (!query.trim()) return items;
+  const q = query.toLowerCase();
+  return items.filter(
+    (item) =>
+      item.category.toLowerCase().includes(q) ||
+      (item.note && item.note.toLowerCase().includes(q))
+  );
+}
