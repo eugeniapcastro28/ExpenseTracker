@@ -46,7 +46,7 @@ function DashboardPage() {
             </div>
             <div className="exp-right">
               <span className={`exp-amt ${item.type === 'income' ? 'income-amt' : ''}`}>
-                {item.type === 'income' ? '+' : '-'}${item.amount.toFixed(2)}
+                {item.type === 'income' ? '+' : '-'}₱{item.amount.toFixed(2)}
               </span>
             </div>
           </li>

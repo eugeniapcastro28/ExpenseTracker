@@ -15,7 +15,7 @@ function IncomeList({ incomes, onDelete }) {
             <div className="exp-note">{income.date}</div>
           </div>
           <div className="exp-right">
-            <span className="exp-amt income-amt">+${income.amount.toFixed(2)}</span>
+            <span className="exp-amt income-amt">+₱{income.amount.toFixed(2)}</span>
             <button className="btn-delete" onClick={() => onDelete(income.id)}>×</button>
           </div>
         </li>

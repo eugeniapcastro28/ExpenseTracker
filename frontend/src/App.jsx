@@ -4,6 +4,9 @@ import LoginPage from './pages/LoginPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import ExpensePage from './pages/ExpensePage.jsx';
 import IncomePage from './pages/IncomePage.jsx';
+import AddTransactionPage from './pages/AddTransactionPage.jsx';
+import AddExpensePage from './pages/AddExpensePage.jsx';
+import AddIncomePage from './pages/AddIncomePage.jsx';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,6 +41,9 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/expenses" element={<ExpensePage />} />
           <Route path="/income" element={<IncomePage />} />
+          <Route path="/add" element={<AddTransactionPage />} />
+          <Route path="/add/expense" element={<AddExpensePage />} />
+          <Route path="/add/income" element={<AddIncomePage />} />
         </Routes>
 
         <nav className="bottom-nav">
@@ -45,13 +51,12 @@ function App() {
             <span className="nav-icon">⊞</span>
             <span className="nav-label">Dashboard</span>
           </NavLink>
+          <NavLink to="/add" className="nav-add-btn">
+            <span>+</span>
+          </NavLink>
           <NavLink to="/expenses" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             <span className="nav-icon">↓</span>
             <span className="nav-label">Expenses</span>
-          </NavLink>
-          <NavLink to="/income" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-            <span className="nav-icon">↑</span>
-            <span className="nav-label">Income</span>
           </NavLink>
         </nav>
       </div>

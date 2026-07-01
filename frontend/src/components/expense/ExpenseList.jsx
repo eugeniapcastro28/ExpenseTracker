@@ -15,7 +15,7 @@ function ExpenseList({ expenses, onDelete }) {
             <div className="exp-note">{expense.date}</div>
           </div>
           <div className="exp-right">
-            <span className="exp-amt">${expense.amount.toFixed(2)}</span>
+            <span className="exp-amt">₱{expense.amount.toFixed(2)}</span>
             <button className="btn-delete" onClick={() => onDelete(expense.id)}>×</button>
           </div>
         </li>
