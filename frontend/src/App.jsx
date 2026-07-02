@@ -10,13 +10,23 @@ import AddIncomePage from './pages/add-transaction/AddIncomePage.jsx';
 import BottomNav from './components/layout/BottomNav.jsx';
 import TransactionsPage from './pages/transactions/TransactionsPage.jsx';
 import EditTransactionPage from './pages/transactions/EditTransactionPage.jsx';
+import { generateRecurring, getPendingRecurring } from './api/recurring.js';
+import RecurringPage from './pages/recurring/RecurringPage.jsx';
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    if (localStorage.getItem('token')) setIsLoggedIn(true);
+    if (localStorage.getItem('token')) {
+      setIsLoggedIn(true);
+      generateRecurring()
+        .then(() => getPendingRecurring())
+        .then((items) => setPendingCount(items.length))
+        .catch(() => {});
+    }
     setCheckingAuth(false);
   }, []);
 
@@ -46,9 +56,13 @@ function App() {
           <Route path="/add/income" element={<AddIncomePage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/edit/:id" element={<EditTransactionPage />} />
+          <Route path="/recurring" element={<RecurringPage />} />
         </Routes>
 
-        <BottomNav />
+        <BottomNav
+          pendingCount={pendingCount}
+          onAddClick={() => setShowModal(true)}
+        />
       </div>
     </BrowserRouter>
   );

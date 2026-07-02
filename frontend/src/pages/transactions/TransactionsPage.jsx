@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { getExpenses, deleteExpense } from '../../api/expenses.js';
 import { getIncomes, deleteIncome } from '../../api/incomes.js';
@@ -20,6 +20,12 @@ import {
   SkeletonStatsCard,
   SkeletonTransactionGroup
 } from '../../components/ui/Skeleton.jsx';
+import { exportToCSV } from '../../utils/exportCSV.js';
+import PullToRefresh from '../../components/ui/PullToRefresh.jsx';
+
+
+
+
 
 function TransactionsPage() {
   const [tab, setTab] = useState('expense');
@@ -31,6 +37,10 @@ function TransactionsPage() {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [loading, setLoading] = useState(true);
+  const handleRefresh = useCallback(async () => {
+  await Promise.all([loadExpenses(), loadIncomes()]);
+}, []);
+  const [activeWeek, setActiveWeek] = useState(null);
 
   useEffect(() => {
   async function load() {
@@ -119,6 +129,14 @@ function TransactionsPage() {
     return monthIncomes;
   }, [monthIncomes, pendingDelete]);
 
+  function handleExport() {
+  exportToCSV(visibleExpenses, visibleIncomes, selectedMonth);
+}
+
+  useEffect(() => {
+  setActiveWeek(null);
+}, [selectedMonth]);
+
   const totalExpenses = useMemo(
     () => visibleExpenses.reduce((sum, e) => sum + e.amount, 0),
     [visibleExpenses]
@@ -145,6 +163,17 @@ function TransactionsPage() {
   );
   const searched = useMemo(() => searchItems(categoryFiltered, query), [categoryFiltered, query]);
   const sortedItems = useMemo(() => sortItems(searched, sortBy), [searched, sortBy]);
+  const weekFiltered = useMemo(() => {
+  if (!activeWeek || !chartData.length) return sortedItems;
+  const weekEntry = chartData.find((w) => w.week === activeWeek);
+  if (!weekEntry) return sortedItems;
+  return sortedItems.filter((item) => {
+    const itemDate = new Date(item.date);
+    const start = new Date(weekEntry.startDate);
+    const end = new Date(weekEntry.endDate);
+    return itemDate >= start && itemDate <= end;
+  });
+}, [sortedItems, activeWeek, chartData]);
 
   const emptyMessage =
     query.trim() || categoryFilter
@@ -154,14 +183,20 @@ function TransactionsPage() {
       : 'No income recorded yet.';
 
   return (
+  <PullToRefresh onRefresh={handleRefresh}>
   <div className="page-content">
     <div className="tx-page-header">
       <p className="section-label" style={{ marginBottom: 0 }}>Transactions</p>
-      <MonthFilter
-        selectedMonth={selectedMonth}
-        onChange={setSelectedMonth}
-        availableMonths={availableMonths}
-      />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <MonthFilter
+          selectedMonth={selectedMonth}
+          onChange={setSelectedMonth}
+          availableMonths={availableMonths}
+        />
+        <button className="btn-export" onClick={handleExport} type="button">
+        ↓ Excel
+      </button>
+      </div>
     </div>
 
     {loading ? <SkeletonTotalsGrid /> : (
@@ -182,10 +217,14 @@ function TransactionsPage() {
         <div className={`net-badge ${net >= 0 ? 'net-positive' : 'net-negative'}`}>
           {net >= 0 ? 'Net gain this month' : 'Net loss this month'}: {net >= 0 ? '+' : ''}₱{net.toFixed(2)}
         </div>
-        <TransactionStats data={chartData} />
+        <TransactionStats
+          data={chartData}
+          activeWeek={activeWeek}
+          onWeekSelect={setActiveWeek}
+        />
       </>
     )}
-
+      
     <div className="type-toggle">
       <button
         className={`type-btn ${tab === 'income' ? 'type-btn-active-income' : ''}`}
@@ -230,7 +269,7 @@ function TransactionsPage() {
       </div>
     ) : (
       <GroupedTransactionList
-        items={sortedItems}
+        items={weekFiltered}
         type={tab}
         onRequestDelete={handleRequestDelete}
         emptyMessage={emptyMessage}
@@ -245,6 +284,7 @@ function TransactionsPage() {
       />
     )}
   </div>
+  </PullToRefresh>
 );
 }
 

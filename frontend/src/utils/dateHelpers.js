@@ -1,3 +1,10 @@
+function toLocalDateStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export function getMonthLabel(date) {
   return date.toLocaleString('default', { month: 'long', year: 'numeric' });
 }
@@ -29,31 +36,7 @@ export function getAvailableMonths(expenses, incomes) {
 export function monthKey(date) {
   return `${date.getFullYear()}-${date.getMonth()}`;
 }
-
-export function groupByWeek(items, refDate) {
-  // Splits the selected month into 4-5 week buckets based on day-of-month
-  const buckets = {};
-
-  items.forEach((item) => {
-    const d = new Date(item.date);
-    const weekNum = Math.ceil(d.getDate() / 7);
-    const key = `Week ${weekNum}`;
-    if (!buckets[key]) buckets[key] = { week: key, income: 0, expense: 0 };
-    buckets[key][item.type] += item.amount;
-  });
-
-  // Ensure weeks appear in order even if empty
-  const maxWeek = Math.ceil(
-    new Date(refDate.getFullYear(), refDate.getMonth() + 1, 0).getDate() / 7
-  );
-  const result = [];
-  for (let i = 1; i <= maxWeek; i++) {
-    const key = `Week ${i}`;
-    result.push(buckets[key] || { week: key, income: 0, expense: 0 });
-  }
-  return result;
-}
-
+ 
 export function sortItems(items, sortBy) {
   const copy = [...items];
   switch (sortBy) {
@@ -111,4 +94,71 @@ export function searchItems(items, query) {
 export function filterByCategory(items, category) {
   if (!category) return items;
   return items.filter((item) => item.category === category);
+}
+
+export function groupByWeek(items, month) {
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+
+  // Use explicit time to avoid timezone issues
+  const firstDay = new Date(year, monthIndex, 1);
+  const lastDay = new Date(year, monthIndex + 1, 0); // last day of month
+
+  const weeks = [];
+  let weekStart = new Date(firstDay);
+  let weekNum = 1;
+
+  while (weekStart <= lastDay) {
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    if (weekEnd > lastDay) weekEnd.setTime(lastDay.getTime());
+
+    const startStr = toLocalDateStr(weekStart);
+    const endStr = toLocalDateStr(weekEnd);
+
+    const weekItems = items.filter((item) => {
+      // Compare as strings directly — avoids all timezone issues
+      return item.date >= startStr && item.date <= endStr;
+    });
+
+    const income = weekItems
+      .filter((i) => i.type === 'income')
+      .reduce((s, i) => s + i.amount, 0);
+
+    const expense = weekItems
+      .filter((i) => i.type === 'expense')
+      .reduce((s, i) => s + i.amount, 0);
+
+    weeks.push({
+      week: `W${weekNum}`,
+      income: parseFloat(income.toFixed(2)),
+      expense: parseFloat(expense.toFixed(2)),
+      startDate: startStr,
+      endDate: endStr,
+    });
+
+    weekStart = new Date(weekEnd);
+    weekStart.setDate(weekStart.getDate() + 1);
+    weekNum++;
+  }
+
+  return weeks;
+}
+
+export function isDueSoon(dueDate, daysAhead = 5) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  const threshold = new Date(today);
+  threshold.setDate(threshold.getDate() + daysAhead);
+
+  // Includes anything overdue (due < today) up through daysAhead from now
+  return due <= threshold;
+}
+
+export function filterDueSoon(items, daysAhead = 5) {
+  return items.filter((item) => isDueSoon(item.due_date, daysAhead));
 }

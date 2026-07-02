@@ -1,37 +1,47 @@
-import { useEffect, useState } from 'react';
-import { getSummary } from '../../api/expenses.js';
-import { getExpenses } from '../../api/expenses.js';
+import { useEffect, useState, useCallback } from 'react';
+import { getSummary, getExpenses } from '../../api/expenses.js';
 import { getIncomes } from '../../api/incomes.js';
 import Summary from '../../components/dashboard/Summary.jsx';
+import { getPendingRecurring, generateRecurring } from '../../api/recurring.js';
+import PendingRecurringCard from '../../components/recurring/PendingRecurringCard.jsx';
+import { filterDueSoon } from '../../utils/dateHelpers.js';
 
 function DashboardPage() {
   const [summary, setSummary] = useState(null);
   const [recent, setRecent] = useState([]);
+  const [pending, setPending] = useState([]);
+
+  const load = useCallback(async () => {
+    // Ensure this month's pending items exist before fetching them
+    await generateRecurring();
+
+    const [summaryData, expensesData, incomesData, pendingData] = await Promise.all([
+      getSummary(),
+      getExpenses(),
+      getIncomes(),
+      getPendingRecurring()
+    ]);
+    setSummary(summaryData);
+    setPending(filterDueSoon(pendingData,20));
+
+    const combined = [
+      ...expensesData.map((e) => ({ ...e, type: 'expense' })),
+      ...incomesData.map((i) => ({ ...i, type: 'income' }))
+    ]
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 5);
+
+    setRecent(combined);
+  }, []);
 
   useEffect(() => {
-    async function load() {
-      const [summaryData, expensesData, incomesData] = await Promise.all([
-        getSummary(),
-        getExpenses(),
-        getIncomes()
-      ]);
-      setSummary(summaryData);
-
-      const combined = [
-        ...expensesData.map((e) => ({ ...e, type: 'expense' })),
-        ...incomesData.map((i) => ({ ...i, type: 'income' }))
-      ]
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 5);
-
-      setRecent(combined);
-    }
     load();
-  }, []);
+  }, [load]);
 
   return (
     <div className="page-content">
       <Summary summary={summary} />
+      <PendingRecurringCard items={pending} onUpdate={load} />
       <p className="section-label">Recent transactions</p>
       {recent.length === 0 && <p className="empty-state">No transactions yet.</p>}
       <ul className="expense-list">

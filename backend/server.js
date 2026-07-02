@@ -78,16 +78,7 @@ app.get('/api/expenses', requireAuth, (req, res) => {
   const expenses = db.prepare('SELECT * FROM expenses WHERE user_id = ?').all(req.userId);
   res.json(expenses);
 });
-
-app.put('/api/expenses/:id', requireAuth, (req, res) => {
-  const { amount, category, note, date } = req.body;
-
-  db.prepare(
-    'UPDATE expenses SET amount = ?, category = ?, note = ?, date = ? WHERE id = ? AND user_id = ?'
-  ).run(amount, category, note || '', date, req.params.id, req.userId);
-
-  res.json({ id: req.params.id, amount, category, note, date });
-});
+ 
 
 app.delete('/api/expenses/:id', requireAuth, (req, res) => {
   db.prepare('DELETE FROM expenses WHERE id = ? AND user_id = ?').run(req.params.id, req.userId);
@@ -203,4 +194,160 @@ app.put('/api/incomes/:id', requireAuth, (req, res) => {
 
   const updated = db.prepare('SELECT * FROM incomes WHERE id = ?').get(req.params.id);
   res.json(updated);
+});
+
+// ── Recurring Expenses ──
+app.get('/api/recurring/expenses', requireAuth, (req, res) => {
+  const items = db
+    .prepare('SELECT * FROM recurring_expenses WHERE user_id = ? AND active = 1 ORDER BY id DESC')
+    .all(req.userId);
+  res.json(items);
+});
+
+app.post('/api/recurring/expenses', requireAuth, (req, res) => {
+  const { amount, category, note, day_of_month } = req.body;
+  if (!amount || !category || !day_of_month) {
+    return res.status(400).json({ error: 'amount, category, and day_of_month are required' });
+  }
+  const result = db
+    .prepare('INSERT INTO recurring_expenses (user_id, amount, category, note, day_of_month) VALUES (?, ?, ?, ?, ?)')
+    .run(req.userId, amount, category, note || '', day_of_month);
+  const created = db.prepare('SELECT * FROM recurring_expenses WHERE id = ?').get(result.lastInsertRowid);
+  res.status(201).json(created);
+});
+
+app.delete('/api/recurring/expenses/:id', requireAuth, (req, res) => {
+  const existing = db
+    .prepare('SELECT * FROM recurring_expenses WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  db.prepare('UPDATE recurring_expenses SET active = 0 WHERE id = ?').run(req.params.id);
+  res.status(204).send();
+});
+
+// ── Recurring Incomes ──
+app.get('/api/recurring/incomes', requireAuth, (req, res) => {
+  const items = db
+    .prepare('SELECT * FROM recurring_incomes WHERE user_id = ? AND active = 1 ORDER BY id DESC')
+    .all(req.userId);
+  res.json(items);
+});
+
+app.post('/api/recurring/incomes', requireAuth, (req, res) => {
+  const { amount, category, note, day_of_month } = req.body;
+  if (!amount || !category || !day_of_month) {
+    return res.status(400).json({ error: 'amount, category, and day_of_month are required' });
+  }
+  const result = db
+    .prepare('INSERT INTO recurring_incomes (user_id, amount, category, note, day_of_month) VALUES (?, ?, ?, ?, ?)')
+    .run(req.userId, amount, category, note || '', day_of_month);
+  const created = db.prepare('SELECT * FROM recurring_incomes WHERE id = ?').get(result.lastInsertRowid);
+  res.status(201).json(created);
+});
+
+app.delete('/api/recurring/incomes/:id', requireAuth, (req, res) => {
+  const existing = db
+    .prepare('SELECT * FROM recurring_incomes WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  db.prepare('UPDATE recurring_incomes SET active = 0 WHERE id = ?').run(req.params.id);
+  res.status(204).send();
+});
+
+// ── Generate this month's transactions from recurring ──
+app.post('/api/recurring/generate', requireAuth, (req, res) => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const monthKey = `${year}-${month}`;
+
+  const recurringExpenses = db
+    .prepare('SELECT * FROM recurring_expenses WHERE user_id = ? AND active = 1')
+    .all(req.userId);
+
+  const recurringIncomes = db
+    .prepare('SELECT * FROM recurring_incomes WHERE user_id = ? AND active = 1')
+    .all(req.userId);
+
+  let generated = 0;
+
+  for (const item of recurringExpenses) {
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+    const day = String(Math.min(item.day_of_month, lastDay)).padStart(2, '0');
+    const dueDate = `${year}-${month}-${day}`;
+
+    const exists = db
+      .prepare('SELECT id FROM recurring_pending WHERE user_id = ? AND recurring_id = ? AND type = ? AND month_key = ?')
+      .get(req.userId, item.id, 'expense', monthKey);
+
+    if (!exists) {
+      db.prepare(`
+        INSERT INTO recurring_pending (user_id, recurring_id, type, amount, category, note, due_date, month_key)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(req.userId, item.id, 'expense', item.amount, item.category, item.note || '', dueDate, monthKey);
+      generated++;
+    }
+  }
+
+  for (const item of recurringIncomes) {
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+    const day = String(Math.min(item.day_of_month, lastDay)).padStart(2, '0');
+    const dueDate = `${year}-${month}-${day}`;
+
+    const exists = db
+      .prepare('SELECT id FROM recurring_pending WHERE user_id = ? AND recurring_id = ? AND type = ? AND month_key = ?')
+      .get(req.userId, item.id, 'income', monthKey);
+
+    if (!exists) {
+      db.prepare(`
+        INSERT INTO recurring_pending (user_id, recurring_id, type, amount, category, note, due_date, month_key)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(req.userId, item.id, 'income', item.amount, item.category, item.note || '', dueDate, monthKey);
+      generated++;
+    }
+  }
+
+  res.json({ generated });
+});
+
+// Get all pending recurring items
+app.get('/api/recurring/pending', requireAuth, (req, res) => {
+  const items = db
+    .prepare(`SELECT * FROM recurring_pending WHERE user_id = ? AND status = 'pending' ORDER BY due_date ASC`)
+    .all(req.userId);
+  res.json(items);
+});
+
+// Confirm — mark as paid/received and insert into real transactions
+app.post('/api/recurring/pending/:id/confirm', requireAuth, (req, res) => {
+  const pending = db
+    .prepare('SELECT * FROM recurring_pending WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+
+  if (!pending) return res.status(404).json({ error: 'Not found' });
+
+  // Insert into real transactions
+  const table = pending.type === 'expense' ? 'expenses' : 'incomes';
+  db.prepare(`INSERT INTO ${table} (user_id, amount, category, note, date) VALUES (?, ?, ?, ?, ?)`)
+    .run(req.userId, pending.amount, pending.category, pending.note, pending.due_date);
+
+  // Mark as confirmed
+  db.prepare('UPDATE recurring_pending SET status = ? WHERE id = ?')
+    .run('confirmed', req.params.id);
+
+  res.json({ success: true });
+});
+
+// Dismiss — skip this month without adding to transactions
+app.post('/api/recurring/pending/:id/dismiss', requireAuth, (req, res) => {
+  const pending = db
+    .prepare('SELECT * FROM recurring_pending WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+
+  if (!pending) return res.status(404).json({ error: 'Not found' });
+
+  db.prepare('UPDATE recurring_pending SET status = ? WHERE id = ?')
+    .run('dismissed', req.params.id);
+
+  res.json({ success: true });
 });
