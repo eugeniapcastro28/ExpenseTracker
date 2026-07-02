@@ -1,16 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-
-function getToken() {
-  return localStorage.getItem('token');
-}
-
-function authHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${getToken()}`
-  };
-}
-
+import { API_BASE, authHeaders } from './client.js';
+ 
 export async function getRecurringExpenses() {
   const res = await fetch(`${API_BASE}/recurring/expenses`, {
     headers: authHeaders()

@@ -1,4 +1,4 @@
-const API_BASE = 'https://expensetracker-w139.onrender.com/api';
+import { API_BASE, authHeaders } from './client.js';
 
 export async function signup(email, password) {
   const res = await fetch(`${API_BASE}/auth/signup`, {
