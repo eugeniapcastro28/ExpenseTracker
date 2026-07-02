@@ -14,8 +14,7 @@ import {
 } from '../../api/recurring.js';
 import { getCategoryMeta } from '../../utils/categoryIcons.js';
 import { Repeat, Trash2, Check, X } from 'lucide-react';
-import PendingRecurringCard from '../../components/Recurring/PendingRecurringCard.jsx';
-import { Edit2 } from 'lucide-react';
+import PendingRecurringCard from '../../components/Recurring/PendingRecurringCard.jsx'; 
 import EditRecurringModal from '../../components/Recurring/EditRecurringModal.jsx';
 import { updateRecurringExpense, updateRecurringIncome } from '../../api/recurring.js';
 
@@ -218,7 +217,12 @@ function RecurringPage() {
             const isResolving = resolvingId === item.id;
 
             return (
-              <li key={item.id} className="expense-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+              <li
+                  key={item.id}
+                  className="expense-item"
+                  style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8, cursor: 'pointer' }}
+                  onClick={() => setEditingItem(item)}
+                >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div className="tx-item-left">
                     <div className="tx-icon-circle" style={{ background: bg, color }}>
@@ -255,8 +259,7 @@ function RecurringPage() {
                       type="button"
                       title="Edit"
                       disabled={isResolving}
-                    >
-                      <Edit2 size={13} />
+                    > 
                     </button>
                     <button
                       className="pending-btn-confirm"
@@ -290,15 +293,7 @@ function RecurringPage() {
             );
           })}
         </ul>
-      )}
-      {editingItem && (
-        <EditRecurringModal
-          item={editingItem}
-          type={tab}
-          onSave={handleSaveEdit}
-          onClose={() => setEditingItem(null)}
-        />
-      )}
+      )} 
     </div>
   );
 }
