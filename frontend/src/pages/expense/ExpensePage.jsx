@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getExpenses, createExpense, deleteExpense } from '../../api/expenses.js';
-import ExpenseForm from '../../components/expense/ExpenseForm.jsx';
-import ExpenseList from '../../components/expense/ExpenseList.jsx';
+import ExpenseForm from '../../components/Expense/ExpenseForm.jsx';
+import ExpenseList from '../../components/Expense/ExpenseList.jsx';
 
 function ExpensePage() {
   const [expenses, setExpenses] = useState([]);

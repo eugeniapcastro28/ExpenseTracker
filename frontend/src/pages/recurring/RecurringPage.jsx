@@ -14,7 +14,10 @@ import {
 } from '../../api/recurring.js';
 import { getCategoryMeta } from '../../utils/categoryIcons.js';
 import { Repeat, Trash2, Check, X } from 'lucide-react';
-import PendingRecurringCard from '../../components/recurring/PendingRecurringCard.jsx';
+import PendingRecurringCard from '../../components/Recurring/PendingRecurringCard.jsx';
+import { Edit2 } from 'lucide-react';
+import EditRecurringModal from '../../components/Recurring/EditRecurringModal.jsx';
+import { updateRecurringExpense, updateRecurringIncome } from '../../api/recurring.js';
 
 const EXPENSE_CATEGORIES = ['Food', 'Transport', 'Bills', 'Shopping', 'Entertainment', 'Other'];
 const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Business', 'Investment', 'Gift', 'Other'];
@@ -26,6 +29,7 @@ function RecurringPage() {
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resolvingId, setResolvingId] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
 
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
@@ -118,6 +122,15 @@ function RecurringPage() {
     }
   }
 
+  async function handleSaveEdit(id, data) {
+    if (tab === 'expense') {
+      await updateRecurringExpense(id, data);
+    } else {
+      await updateRecurringIncome(id, data);
+    }
+    await load();
+  }
+
   const activeItems = tab === 'expense' ? recurringExpenses : recurringIncomes;
 
   return (
@@ -205,60 +218,86 @@ function RecurringPage() {
             const isResolving = resolvingId === item.id;
 
             return (
-              <li key={item.id} className="expense-item">
-                <div className="tx-item-left">
-                  <div className="tx-icon-circle" style={{ background: bg, color }}>
-                    <Icon size={18} />
-                  </div>
-                  <div>
-                    <div className="exp-cat">
-                      {item.note || item.category}
-                      <span className={`badge ${tab === 'income' ? `badge-income-${item.category}` : `badge-${item.category}`}`}>
-                        {item.category}
-                      </span>
+              <li key={item.id} className="expense-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="tx-item-left">
+                    <div className="tx-icon-circle" style={{ background: bg, color }}>
+                      <Icon size={18} />
                     </div>
-                    <div className="exp-note">
-                      {pendingEntry
-                        ? `Due ${pendingEntry.due_date}`
-                        : `Every month on day ${item.day_of_month}`}
+                    <div>
+                      <div className="exp-cat">
+                        {item.note || item.category}
+                        <span className={`badge ${tab === 'income' ? `badge-income-${item.category}` : `badge-${item.category}`}`}>
+                          {item.category}
+                        </span>
+                      </div>
+                      <div className="exp-note">
+                        <Repeat size={10} style={{ display: 'inline', marginRight: 4 }} />
+                        {pendingEntry ? `Due ${pendingEntry.due_date}` : `Every month on day ${item.day_of_month}`}
+                      </div>
+                      {item.created_at && (
+                        <div className="exp-note" style={{ marginTop: 2 }}>
+                          Added {new Date(item.created_at).toLocaleDateString('default', {
+                            month: 'short', day: 'numeric', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-                <div className="exp-right">
-                  <span className={`exp-amt ${tab === 'income' ? 'income-amt' : ''}`}>
-                    {tab === 'income' ? '+' : '-'}₱{item.amount.toFixed(2)}
-                  </span>
-                  <button
-                    className="pending-btn-confirm"
-                    onClick={() => handleConfirm(item)}
-                    title={tab === 'income' ? 'Mark as received' : 'Mark as paid'}
-                    type="button"
-                    disabled={isResolving}
-                  >
-                    <Check size={14} />
-                  </button>
-                  <button
-                    className="pending-btn-dismiss"
-                    onClick={() => handleDismiss(item)}
-                    title="Skip this month"
-                    type="button"
-                    disabled={isResolving}
-                  >
-                    <X size={14} />
-                  </button>
-                  <button
-                    className="btn-delete"
-                    onClick={() => handleDelete(item.id, tab)}
-                    type="button"
-                    title="Delete recurring rule"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                  <div className="exp-right">
+                    <span className={`exp-amt ${tab === 'income' ? 'income-amt' : ''}`}>
+                      {tab === 'income' ? '+' : '-'}₱{item.amount.toFixed(2)}
+                    </span>
+                    <button
+                      className="btn-edit"
+                      onClick={() => setEditingItem(item)}
+                      type="button"
+                      title="Edit"
+                      disabled={isResolving}
+                    >
+                      <Edit2 size={13} />
+                    </button>
+                    <button
+                      className="pending-btn-confirm"
+                      onClick={() => handleConfirm(item)}
+                      title={tab === 'income' ? 'Mark as received' : 'Mark as paid'}
+                      type="button"
+                      disabled={isResolving}
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      className="pending-btn-dismiss"
+                      onClick={() => handleDismiss(item)}
+                      title="Skip this month"
+                      type="button"
+                      disabled={isResolving}
+                    >
+                      <X size={14} />
+                    </button>
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDelete(item.id, tab)}
+                      type="button"
+                      title="Delete recurring rule"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               </li>
             );
           })}
         </ul>
+      )}
+      {editingItem && (
+        <EditRecurringModal
+          item={editingItem}
+          type={tab}
+          onSave={handleSaveEdit}
+          onClose={() => setEditingItem(null)}
+        />
       )}
     </div>
   );

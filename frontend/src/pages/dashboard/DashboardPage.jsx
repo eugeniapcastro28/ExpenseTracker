@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getSummary, getExpenses } from '../../api/expenses.js';
 import { getIncomes } from '../../api/incomes.js';
-import Summary from '../../components/dashboard/Summary.jsx';
+import Summary from '../../components/Dashboard/Summary.jsx';
 import { getPendingRecurring, generateRecurring } from '../../api/recurring.js';
-import PendingRecurringCard from '../../components/recurring/PendingRecurringCard.jsx';
+import PendingRecurringCard from '../../components/Recurring/PendingRecurringCard.jsx';
 import { filterDueSoon } from '../../utils/dateHelpers.js';
 
 function DashboardPage() {

@@ -1,4 +1,4 @@
-import TransactionListItem from '../transactions/TransactionListItem.jsx';
+import TransactionListItem from '../Transactions/TransactionListItem.jsx';
 
 function IncomeList({ incomes, onDelete }) {
   if (incomes.length === 0) {

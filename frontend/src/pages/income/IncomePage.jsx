@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getIncomes, createIncome, deleteIncome } from '../../api/incomes.js';
-import IncomeForm from '../../components/income/IncomeForm.jsx';
-import IncomeList from '../../components/income/IncomeList.jsx';
+import IncomeForm from '../../components/Income/IncomeForm.jsx';
+import IncomeList from '../../components/Income/IncomeList.jsx';
 
 function IncomePage() {
   const [incomes, setIncomes] = useState([]);

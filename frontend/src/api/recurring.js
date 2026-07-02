@@ -75,20 +75,40 @@ export async function dismissPending(id) {
     headers: authHeaders()
   });
   return res.json();
-}
+} 
 
-export async function confirmRecurringNow(id, type) {
-  const res = await fetch(`${API_BASE}/recurring/${type}s/${id}/confirm-now`, {
-    method: 'POST',
-    headers: authHeaders()
+export async function updateRecurringExpense(id, data) {
+  const res = await fetch(`${API_BASE}/recurring/expenses/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(data)
   });
   return res.json();
 }
 
-export async function dismissRecurringNow(id, type) {
-  const res = await fetch(`${API_BASE}/recurring/${type}s/${id}/dismiss-now`, {
+export async function updateRecurringIncome(id, data) {
+  const res = await fetch(`${API_BASE}/recurring/incomes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+export async function confirmRecurringNow(recurringId, type) {
+  const res = await fetch(`${API_BASE}/recurring/confirm-now`, {
     method: 'POST',
-    headers: authHeaders()
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ recurringId, type })
+  });
+  return res.json();
+}
+
+export async function dismissRecurringNow(recurringId, type) {
+  const res = await fetch(`${API_BASE}/recurring/dismiss-now`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ recurringId, type })
   });
   return res.json();
 }

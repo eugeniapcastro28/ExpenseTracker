@@ -351,3 +351,104 @@ app.post('/api/recurring/pending/:id/dismiss', requireAuth, (req, res) => {
 
   res.json({ success: true });
 });
+
+app.put('/api/recurring/expenses/:id', requireAuth, (req, res) => {
+  const { amount, category, note, day_of_month } = req.body;
+  const existing = db
+    .prepare('SELECT * FROM recurring_expenses WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  db.prepare(
+    'UPDATE recurring_expenses SET amount = ?, category = ?, note = ?, day_of_month = ? WHERE id = ?'
+  ).run(
+    amount ?? existing.amount,
+    category ?? existing.category,
+    note ?? existing.note,
+    day_of_month ?? existing.day_of_month,
+    req.params.id
+  );
+  const updated = db.prepare('SELECT * FROM recurring_expenses WHERE id = ?').get(req.params.id);
+  res.json(updated);
+});
+
+app.put('/api/recurring/incomes/:id', requireAuth, (req, res) => {
+  const { amount, category, note, day_of_month } = req.body;
+  const existing = db
+    .prepare('SELECT * FROM recurring_incomes WHERE id = ? AND user_id = ?')
+    .get(req.params.id, req.userId);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  db.prepare(
+    'UPDATE recurring_incomes SET amount = ?, category = ?, note = ?, day_of_month = ? WHERE id = ?'
+  ).run(
+    amount ?? existing.amount,
+    category ?? existing.category,
+    note ?? existing.note,
+    day_of_month ?? existing.day_of_month,
+    req.params.id
+  );
+  const updated = db.prepare('SELECT * FROM recurring_incomes WHERE id = ?').get(req.params.id);
+  res.json(updated);
+});
+
+// Confirm a recurring item immediately without a pending entry
+app.post('/api/recurring/confirm-now', requireAuth, (req, res) => {
+  const { recurringId, type } = req.body;
+  const table = type === 'expense' ? 'recurring_expenses' : 'recurring_incomes';
+  const txTable = type === 'expense' ? 'expenses' : 'incomes';
+
+  const item = db
+    .prepare(`SELECT * FROM ${table} WHERE id = ? AND user_id = ?`)
+    .get(recurringId, req.userId);
+
+  if (!item) return res.status(404).json({ error: 'Not found' });
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+  const day = String(Math.min(item.day_of_month, lastDay)).padStart(2, '0');
+  const date = `${year}-${month}-${day}`;
+
+  db.prepare(
+    `INSERT INTO ${txTable} (user_id, amount, category, note, date) VALUES (?, ?, ?, ?, ?)`
+  ).run(req.userId, item.amount, item.category, item.note || '', date);
+
+  res.json({ success: true });
+});
+
+// Dismiss a recurring item this month without a pending entry
+app.post('/api/recurring/dismiss-now', requireAuth, (req, res) => {
+  const { recurringId, type } = req.body;
+  const monthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+
+  // Create a pending entry and immediately dismiss it
+  const table = type === 'expense' ? 'recurring_expenses' : 'recurring_incomes';
+  const item = db
+    .prepare(`SELECT * FROM ${table} WHERE id = ? AND user_id = ?`)
+    .get(recurringId, req.userId);
+
+  if (!item) return res.status(404).json({ error: 'Not found' });
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+  const day = String(Math.min(item.day_of_month, lastDay)).padStart(2, '0');
+  const dueDate = `${year}-${month}-${day}`;
+
+  const existing = db
+    .prepare('SELECT id FROM recurring_pending WHERE user_id = ? AND recurring_id = ? AND type = ? AND month_key = ?')
+    .get(req.userId, recurringId, type, monthKey);
+
+  if (!existing) {
+    db.prepare(`
+      INSERT INTO recurring_pending (user_id, recurring_id, type, amount, category, note, due_date, month_key, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'dismissed')
+    `).run(req.userId, recurringId, type, item.amount, item.category, item.note || '', dueDate, monthKey);
+  } else {
+    db.prepare('UPDATE recurring_pending SET status = ? WHERE id = ?')
+      .run('dismissed', existing.id);
+  }
+
+  res.json({ success: true });
+});

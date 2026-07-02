@@ -2,11 +2,11 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { getExpenses, deleteExpense } from '../../api/expenses.js';
 import { getIncomes, deleteIncome } from '../../api/incomes.js';
-import GroupedTransactionList from '../../components/transactions/GroupedTransactionList.jsx';
-import MonthFilter from '../../components/transactions/MonthFilter.jsx';
-import TransactionStats from '../../components/transactions/TransactionStats.jsx';
-import UndoToast from '../../components/transactions/UndoToast.jsx';
-import CategoryFilterChips from '../../components/transactions/CategoryFilterChips.jsx';
+import GroupedTransactionList from '../../components/Transactions/GroupedTransactionList.jsx';
+import MonthFilter from '../../components/Transactions/MonthFilter.jsx';
+import TransactionStats from '../../components/Transactions/TransactionStats.jsx';
+import UndoToast from '../../components/Transactions/UndoToast.jsx';
+import CategoryFilterChips from '../../components/Transactions/CategoryFilterChips.jsx';
 import {
   filterByMonth,
   groupByWeek,
@@ -19,9 +19,9 @@ import {
   SkeletonTotalsGrid,
   SkeletonStatsCard,
   SkeletonTransactionGroup
-} from '../../components/ui/Skeleton.jsx';
+} from '../../components/Common/Skeleton.jsx';
 import { exportToCSV } from '../../utils/exportCSV.js';
-import PullToRefresh from '../../components/ui/PullToRefresh.jsx';
+import PullToRefresh from '../../components/Common/PullToRefresh.jsx';
 
 
 
