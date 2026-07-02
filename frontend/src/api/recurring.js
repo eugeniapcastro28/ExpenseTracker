@@ -76,3 +76,19 @@ export async function dismissPending(id) {
   });
   return res.json();
 }
+
+export async function confirmRecurringNow(id, type) {
+  const res = await fetch(`${API_BASE}/recurring/${type}s/${id}/confirm-now`, {
+    method: 'POST',
+    headers: authHeaders()
+  });
+  return res.json();
+}
+
+export async function dismissRecurringNow(id, type) {
+  const res = await fetch(`${API_BASE}/recurring/${type}s/${id}/dismiss-now`, {
+    method: 'POST',
+    headers: authHeaders()
+  });
+  return res.json();
+}

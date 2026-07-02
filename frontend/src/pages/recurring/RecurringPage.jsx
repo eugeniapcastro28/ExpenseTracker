@@ -6,10 +6,14 @@ import {
   createRecurringIncome,
   deleteRecurringExpense,
   deleteRecurringIncome,
-  getPendingRecurring
+  getPendingRecurring,
+  confirmPending,
+  dismissPending,
+  confirmRecurringNow,
+  dismissRecurringNow
 } from '../../api/recurring.js';
 import { getCategoryMeta } from '../../utils/categoryIcons.js';
-import { Repeat, Trash2 } from 'lucide-react';
+import { Repeat, Trash2, Check, X } from 'lucide-react';
 import PendingRecurringCard from '../../components/recurring/PendingRecurringCard.jsx';
 
 const EXPENSE_CATEGORIES = ['Food', 'Transport', 'Bills', 'Shopping', 'Entertainment', 'Other'];
@@ -21,6 +25,7 @@ function RecurringPage() {
   const [recurringIncomes, setRecurringIncomes] = useState([]);
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [resolvingId, setResolvingId] = useState(null);
 
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
@@ -77,6 +82,42 @@ function RecurringPage() {
     await load();
   }
 
+  function findPendingFor(item) {
+    return pending.find((p) => p.recurring_id === item.id && p.type === tab);
+  }
+
+  async function handleConfirm(item) {
+    if (resolvingId) return;
+    setResolvingId(item.id);
+    try {
+      const pendingEntry = findPendingFor(item);
+      if (pendingEntry) {
+        await confirmPending(pendingEntry.id);
+      } else {
+        await confirmRecurringNow(item.id, tab);
+      }
+      await load();
+    } finally {
+      setResolvingId(null);
+    }
+  }
+
+  async function handleDismiss(item) {
+    if (resolvingId) return;
+    setResolvingId(item.id);
+    try {
+      const pendingEntry = findPendingFor(item);
+      if (pendingEntry) {
+        await dismissPending(pendingEntry.id);
+      } else {
+        await dismissRecurringNow(item.id, tab);
+      }
+      await load();
+    } finally {
+      setResolvingId(null);
+    }
+  }
+
   const activeItems = tab === 'expense' ? recurringExpenses : recurringIncomes;
 
   return (
@@ -87,10 +128,10 @@ function RecurringPage() {
 
       {pending.length > 0 && (
         <>
-            <p className="section-label">Action needed</p>
-            <PendingRecurringCard items={pending} onUpdate={load} />
+          <p className="section-label">Action needed</p>
+          <PendingRecurringCard items={pending} onUpdate={load} />
         </>
-        )}
+      )}
 
       <div className="type-toggle">
         <button
@@ -160,6 +201,9 @@ function RecurringPage() {
         <ul className="expense-list">
           {activeItems.map((item) => {
             const { icon: Icon, color, bg } = getCategoryMeta(item.category, tab);
+            const pendingEntry = findPendingFor(item);
+            const isResolving = resolvingId === item.id;
+
             return (
               <li key={item.id} className="expense-item">
                 <div className="tx-item-left">
@@ -174,8 +218,9 @@ function RecurringPage() {
                       </span>
                     </div>
                     <div className="exp-note">
-                      <Repeat size={10} style={{ display: 'inline', marginRight: 4 }} />
-                      Every month on day {item.day_of_month}
+                      {pendingEntry
+                        ? `Due ${pendingEntry.due_date}`
+                        : `Every month on day ${item.day_of_month}`}
                     </div>
                   </div>
                 </div>
@@ -184,9 +229,28 @@ function RecurringPage() {
                     {tab === 'income' ? '+' : '-'}₱{item.amount.toFixed(2)}
                   </span>
                   <button
+                    className="pending-btn-confirm"
+                    onClick={() => handleConfirm(item)}
+                    title={tab === 'income' ? 'Mark as received' : 'Mark as paid'}
+                    type="button"
+                    disabled={isResolving}
+                  >
+                    <Check size={14} />
+                  </button>
+                  <button
+                    className="pending-btn-dismiss"
+                    onClick={() => handleDismiss(item)}
+                    title="Skip this month"
+                    type="button"
+                    disabled={isResolving}
+                  >
+                    <X size={14} />
+                  </button>
+                  <button
                     className="btn-delete"
                     onClick={() => handleDelete(item.id, tab)}
                     type="button"
+                    title="Delete recurring rule"
                   >
                     <Trash2 size={13} />
                   </button>
