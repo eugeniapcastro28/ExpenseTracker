@@ -263,7 +263,7 @@ function RecurringPage() {
                     </button>
                     <button
                       className="pending-btn-confirm"
-                      onClick={() => handleConfirm(item)}
+                      onClick={(e) => { e.stopPropagation(); handleConfirm(item); }}
                       title={tab === 'income' ? 'Mark as received' : 'Mark as paid'}
                       type="button"
                       disabled={isResolving}
@@ -272,7 +272,7 @@ function RecurringPage() {
                     </button>
                     <button
                       className="pending-btn-dismiss"
-                      onClick={() => handleDismiss(item)}
+                      onClick={(e) => { e.stopPropagation(); handleDismiss(item); }}
                       title="Skip this month"
                       type="button"
                       disabled={isResolving}
@@ -281,7 +281,7 @@ function RecurringPage() {
                     </button>
                     <button
                       className="btn-delete"
-                      onClick={() => handleDelete(item.id, tab)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(item.id, tab); }}
                       type="button"
                       title="Delete recurring rule"
                     >
@@ -294,6 +294,14 @@ function RecurringPage() {
           })}
         </ul>
       )} 
+      {editingItem && (
+        <EditRecurringModal
+          item={editingItem}
+          type={tab}
+          onSave={handleSaveEdit}
+          onClose={() => setEditingItem(null)}
+        />
+      )}
     </div>
   );
 }
