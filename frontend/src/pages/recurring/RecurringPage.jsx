@@ -5,10 +5,12 @@ import {
   createRecurringExpense,
   createRecurringIncome,
   deleteRecurringExpense,
-  deleteRecurringIncome
+  deleteRecurringIncome,
+  getPendingRecurring
 } from '../../api/recurring.js';
 import { getCategoryMeta } from '../../utils/categoryIcons.js';
 import { Repeat, Trash2 } from 'lucide-react';
+import PendingRecurringCard from '../../components/recurring/PendingRecurringCard.jsx';
 
 const EXPENSE_CATEGORIES = ['Food', 'Transport', 'Bills', 'Shopping', 'Entertainment', 'Other'];
 const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Business', 'Investment', 'Gift', 'Other'];
@@ -17,9 +19,9 @@ function RecurringPage() {
   const [tab, setTab] = useState('expense');
   const [recurringExpenses, setRecurringExpenses] = useState([]);
   const [recurringIncomes, setRecurringIncomes] = useState([]);
+  const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Form state
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
   const [note, setNote] = useState('');
@@ -31,19 +33,20 @@ function RecurringPage() {
     load();
   }, []);
 
-  // Reset category when switching tabs
   useEffect(() => {
     setCategory(tab === 'expense' ? EXPENSE_CATEGORIES[0] : INCOME_CATEGORIES[0]);
   }, [tab]);
 
   async function load() {
     setLoading(true);
-    const [exp, inc] = await Promise.all([
+    const [exp, inc, pend] = await Promise.all([
       getRecurringExpenses(),
-      getRecurringIncomes()
+      getRecurringIncomes(),
+      getPendingRecurring()
     ]);
     setRecurringExpenses(exp);
     setRecurringIncomes(inc);
+    setPending(pend);
     setLoading(false);
   }
 
@@ -81,6 +84,14 @@ function RecurringPage() {
       <div className="tx-page-header">
         <p className="section-label" style={{ marginBottom: 0 }}>Recurring</p>
       </div>
+
+      {/* Pending items needing action */}
+      {pending.length > 0 && (
+        <>
+          <p className="section-label">Action needed</p>
+          <PendingRecurringCard items={pending} onUpdate={load} />
+        </>
+      )}
 
       <div className="type-toggle">
         <button
@@ -134,12 +145,16 @@ function RecurringPage() {
         </button>
       </form>
 
-      <p className="section-label">Active recurring {tab === 'expense' ? 'expenses' : 'income'}</p>
+      <p className="section-label">
+        Active recurring {tab === 'expense' ? 'expenses' : 'income'}
+      </p>
 
       {loading && <p className="empty-state">Loading...</p>}
 
       {!loading && activeItems.length === 0 && (
-        <p className="empty-state">No recurring {tab === 'expense' ? 'expenses' : 'income'} yet.</p>
+        <p className="empty-state">
+          No recurring {tab === 'expense' ? 'expenses' : 'income'} yet.
+        </p>
       )}
 
       {!loading && activeItems.length > 0 && (
