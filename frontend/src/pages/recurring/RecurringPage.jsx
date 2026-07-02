@@ -85,13 +85,12 @@ function RecurringPage() {
         <p className="section-label" style={{ marginBottom: 0 }}>Recurring</p>
       </div>
 
-      {/* Pending items needing action */}
       {pending.length > 0 && (
         <>
-          <p className="section-label">Action needed</p>
-          <PendingRecurringCard items={pending} onUpdate={load} />
+            <p className="section-label">Action needed</p>
+            <PendingRecurringCard items={pending} onUpdate={load} />
         </>
-      )}
+        )}
 
       <div className="type-toggle">
         <button
